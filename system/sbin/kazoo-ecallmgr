@@ -38,6 +38,7 @@ else
 fi
 
 prepare() {
+    rm -f /etc/kazoo/core/vm.args.orig
     chown ${USER} /etc/kazoo/core
     chown -R ${USER} /opt/kazoo /opt/kazoo/.*
     mkdir -p /tmp/erl_pipes/${NAME}
