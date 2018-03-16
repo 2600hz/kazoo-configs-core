@@ -10,7 +10,6 @@ USER=${KAZOO_USER:-kazoo}
 BIN_FILE=${KAZOO_BIN:-/opt/kazoo/bin/kazoo}
 PID_FILE=${KAZOO_PID:-/var/run/kazoo/${NAME}.pid}
 export HOME=${KAZOO_ROOT:-/opt/kazoo}
-export VMARGS_PATH=${KAZOO_VMARGS:-/etc/kazoo/core/vm.args}
 
 if [ -f /etc/sysconfig/kazoo ]; then
     . /etc/sysconfig/kazoo
@@ -22,12 +21,7 @@ else
     NAME=${NAME#*-}
 fi
 
-export NODE_NAME="${NAME}"
-# Intermediate cookie to start the node,
-# Kazoo will set cookie based on config.ini later
-# All other commands should call `set_cookie` to set
-# correct cookie from running node
-export COOKIE="${COOKIE:-change_me}"
+export KAZOO_NODE="${NAME}"
 
 # Detect core count
 CORES=`grep -E "^processor" /proc/cpuinfo |wc -l`
@@ -38,7 +32,7 @@ else
 fi
 
 prepare() {
-    rm -f /etc/kazoo/core/vm.args.orig
+    rm -f /etc/kazoo/core/vm*.args
     chown ${USER} /etc/kazoo/core
     chown -R ${USER} /opt/kazoo
     mkdir -p /tmp/erl_pipes/${NAME}
@@ -63,7 +57,6 @@ start() {
 
     export CODE_LOADING_MODE=interactive
     export ERL_CRASH_DUMP="/var/log/kazoo/$(date +%s)_${NAME}_erl_crash.dump"
-    set_relx_eviroment_vars
     set -- ${BIN_FILE} "$@"
     if [ "$(whoami)" == "${USER}" ]; then
         exec "$@"
@@ -109,7 +102,6 @@ connect() {
     cd ${HOME}
     for i in `pidof ${BEAM}`; do
         if cat /proc/$i/cmdline | grep -Eq "name[^\-]+${NAME}"; then
-            set_relx_eviroment_vars
             set_cookie
             sudo -E -u ${USER} ${BIN_FILE} remote_console
             RETVAL=$?
@@ -124,7 +116,6 @@ attach() {
     cd ${HOME}
     for i in `pidof ${BEAM}`; do
         if cat /proc/$i/cmdline | grep -Eq "name[^\-]+${NAME}"; then
-            set_relx_eviroment_vars
             set_cookie
             echo "WARNING: You are now directly attached to the running ${NAME} Erlang node."
             echo "   It is safer to use: $0 connect"
@@ -141,7 +132,6 @@ ping_node() {
     cd ${HOME}
     for i in `pidof ${BEAM}`; do
         if cat /proc/$i/cmdline | grep -Eq "name[^\-]+${NAME}"; then
-            set_relx_eviroment_vars
             set_cookie
             sudo -E -u ${USER} ${BIN_FILE} ping
             RETVAL=$?
@@ -165,13 +155,8 @@ pid() {
     fi
 }
 
-set_relx_eviroment_vars() {
-    export RELX_REPLACE_OS_VARS=true
-    export RELX_MULTI_NODE=true
-}
-
 set_cookie() {
-    export COOKIE=`/usr/sbin/sup -n ${NAME} erlang get_cookie | sed "s|'||g"`
+    export KAZOO_COOKIE=`/usr/sbin/sup -n ${NAME} erlang get_cookie | sed "s|'||g"`
     RETVAL=$?
 }
 
