@@ -74,8 +74,12 @@ start() {
 stop() {
     for i in `pidof ${BEAM}`; do
         if cat /proc/$i/cmdline | grep -Eq "name[^\-]+${NAME}"; then
-            kill $i
+            timeout 10 /usr/sbin/sup -n ${NAME} init stop
             RETVAL=$?
+            if [ ${RETVAL} -neq 0 ]; then
+                kill $i
+                RETVAL=$?
+            fi
         fi
     done
 }
