@@ -14,6 +14,11 @@ uri = "amqp://guest:guest@primary.broker:5672"
 
 ;; Kazoo reads in the [amqp] section in order so the first URI listed will be the primary
 
+;; Consumer prefetch: https://www.rabbitmq.com/consumer-prefetch.html
+;; KAZOO defaults to 50 in the code; you can override here if you want to test different prefetch amounts
+;; restart the node or run `sup kazoo_config_init reload` to have new consumers affected
+prefetch = 50
+
 ;; If you are using zones, you define [zone] sections instead but with the same options as [amqp] sections as far as the URIs are concerned
 [zone]
 name = "east-coast"
