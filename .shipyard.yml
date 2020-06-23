@@ -70,4 +70,4 @@ metapackage:
     name: meta-kazoo-applications
     package: kazoo-configs-core
     type: required
-    branch: 'master'
+    branch: '5.0'
