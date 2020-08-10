@@ -45,11 +45,16 @@ package:
 
       mkdir -p %{buildroot}/usr/lib/systemd/system
       cp system/systemd/* %{buildroot}/usr/lib/systemd/system
+      
+      mkdir -p %{buildroot}/etc/kazoo/ra
+
     files:
       doc:
         - CHANGELOG
         - VERSION
       config:
+        - mode: noreplace
+          path: /etc/kazoo/ra
         - mode: noreplace
           path: /etc/kazoo/core
         - mode: noreplace
