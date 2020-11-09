@@ -45,8 +45,8 @@ package:
 
       mkdir -p %{buildroot}/usr/lib/systemd/system
       cp system/systemd/* %{buildroot}/usr/lib/systemd/system
-      
-      mkdir -p %{buildroot}/etc/kazoo/ra
+
+      mkdir -p %{buildroot}/opt/kazoo/var/lib/ra
 
     files:
       doc:
@@ -54,7 +54,7 @@ package:
         - VERSION
       config:
         - mode: noreplace
-          path: /etc/kazoo/ra
+          path: /opt/kazoo/var/lib/ra
         - mode: noreplace
           path: /etc/kazoo/core
         - mode: noreplace
