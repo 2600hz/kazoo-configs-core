@@ -66,16 +66,14 @@ start() {
 }
 
 stop() {
-    for i in `pidof ${BEAM}`; do
-        if cat /proc/$i/cmdline | grep -Eq "name[^\-]+${NAME}"; then
-            timeout 10 /usr/sbin/sup -n ${NAME} init stop
+    if PID=$(find_beam_pid); then
+        timeout 10 /usr/sbin/sup -n "$NAME" init stop
+        RETVAL=$?
+        if [ ${RETVAL} -ne 0 ]; then
+            kill "$PID"
             RETVAL=$?
-            if [ ${RETVAL} -neq 0 ]; then
-                kill $i
-                RETVAL=$?
-            fi
         fi
-    done
+    fi
 }
 
 restart() {
@@ -85,12 +83,10 @@ restart() {
 
 status() {
     cd ${HOME}
-    for i in `pidof ${BEAM}`; do
-        if cat /proc/$i/cmdline | grep -Eq "name[^\-]+${NAME}"; then
-            /usr/sbin/sup -n ${NAME} kz_nodes status
-            RETVAL=$?
-        fi
-    done
+    if find_beam_pid > /dev/null; then
+        /usr/sbin/sup -n "$NAME" kz_nodes status
+        RETVAL=$?
+    fi
     if [ ${RETVAL} -eq 1 ]; then
         echo "${NAME} is not running!"
     fi
@@ -98,13 +94,11 @@ status() {
 
 connect() {
     cd ${HOME}
-    for i in `pidof ${BEAM}`; do
-        if cat /proc/$i/cmdline | grep -Eq "name[^\-]+${NAME}"; then
-            set_cookie
-            fg_bin_cmd remote_console
-            RETVAL=$?
-        fi
-    done
+    if find_beam_pid > /dev/null; then
+        set_cookie
+        fg_bin_cmd remote_console
+        RETVAL=$?
+    fi
     if [ ${RETVAL} -eq 1 ]; then
         echo "${NAME} is not running!"
     fi
@@ -112,15 +106,13 @@ connect() {
 
 attach() {
     cd ${HOME}
-    for i in `pidof ${BEAM}`; do
-        if cat /proc/$i/cmdline | grep -Eq "name[^\-]+${NAME}"; then
-            set_cookie
-            echo "WARNING: You are now directly attached to the running ${NAME} Erlang node."
-            echo "   It is safer to use: $0 connect"
-            fg_bin_cmd attach
-            RETVAL=$?
-        fi
-    done
+    if find_beam_pid > /dev/null; then
+        set_cookie
+        echo "WARNING: You are now directly attached to the running $NAME Erlang node."
+        echo "   It is safer to use: $0 connect"
+        fg_bin_cmd attach
+        RETVAL=$?
+    fi
     if [ ${RETVAL} -eq 1 ]; then
         echo "${NAME} is not running!"
     fi
@@ -128,13 +120,11 @@ attach() {
 
 ping_node() {
     cd ${HOME}
-    for i in `pidof ${BEAM}`; do
-        if cat /proc/$i/cmdline | grep -Eq "name[^\-]+${NAME}"; then
-            set_cookie
-            fg_bin_cmd ping
-            RETVAL=$?
-        fi
-    done
+    if find_beam_pid > /dev/null; then
+        set_cookie
+        fg_bin_cmd ping
+        RETVAL=$?
+    fi
     if [ ${RETVAL} -eq 1 ]; then
         echo "${NAME} is not running!"
     fi
@@ -142,12 +132,8 @@ ping_node() {
 
 pid() {
     cd ${HOME}
-    for i in `pidof ${BEAM}`; do
-        if cat /proc/$i/cmdline | grep -Eq "name[^\-]+${NAME}"; then
-            echo $i
-            RETVAL=0
-        fi
-    done
+    find_beam_pid
+    RETVAL=$?
     if [ ${RETVAL} -eq 1 ]; then
          echo "${NAME} is not running!"
     fi
@@ -174,6 +160,17 @@ fg_bin_cmd() {
         ${BIN_FILE} $@
     fi 
     return $?
+}
+
+find_beam_pid() {
+    for PID in $(pidof $BEAM); do
+        if tr '\0' ' ' < /proc/"$PID"/cmdline | grep -Eq "name[^\-]+$NAME"; then
+            echo "$PID"
+            return 0
+        fi
+    done
+
+    return 1
 }
 
 case "$1" in
