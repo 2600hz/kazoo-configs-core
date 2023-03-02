@@ -2,7 +2,7 @@ name: kazoo-configs-core
 base_branch: origin/master
 exposure: private
 base_core: null
-exposure: private
+
 template: spec.tmpl
 package:
   centos7:
