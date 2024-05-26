@@ -1,7 +1,7 @@
 name: kazoo-configs-core
 custom_files: null
 exposure: private
-base_branch: origin/5.3
+base_branch: origin/5.4
 base_core: null
 template: spec.tmpl
 package:
@@ -220,5 +220,5 @@ metapackage:
     name: meta-kazoo-applications
     package: kazoo-configs-core
     type: required
-    branch: '5.3'
+    branch: '5.4'
 dependencies: null
