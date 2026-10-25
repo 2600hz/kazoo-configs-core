@@ -7,20 +7,6 @@ workflows:
   build_release:
     jobs:
       -
-        build_centos7:
-          filters:
-            tags:
-              only: '/^\d+\.\d+\.\d+(\.\d+)?$/'
-            branches:
-              ignore: '/.*/'
-      -
-        build_rockylinux8:
-          filters:
-            tags:
-              only: '/^\d+\.\d+\.\d+(\.\d+)?$/'
-            branches:
-              ignore: '/.*/'
-      -
         build_rockylinux9:
           filters:
             tags:
